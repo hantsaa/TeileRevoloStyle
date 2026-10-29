@@ -35,3 +35,12 @@ Résultat : `build/RevoloStyle_artefacts/Release/VST3/RevoloStyle.vst3`
 
 ## Test du moteur audio (sans JUCE)
     g++ -O2 -std=c++17 -o test_dsp test/test_dsp.cpp && ./test_dsp
+
+## Son : ce que vise la réverb
+D'après la fiche produit de Teile (« une réverb large et aérienne qui reste au-dessus du mix au lieu de l'empâter »),
+la réverb de ce plugin est volontairement maigre dans le grave et brillante dans l'aigu :
+- le grave de la queue meurt 2 à 3 fois plus vite que le médium (étagère grave dans la boucle de réverb) ;
+- coupe-bas fixe (70 Hz) sur la sortie de la réverb, en plus du réglage FILTER ;
+- le niveau à REVERB = max reste ~10 dB sous le signal sec (mode MIX) ; limiteur doux à 1.0 ;
+- NOISE : bruit blanc passe-haut (800 Hz, sans grave) injecté dans la réverb, puis soumis au FILTER et au trémolo (« gater »).
+`test/analyze.py` (après `./test_dsp dump`) affiche le RT60 et le niveau par bande d'octave pour vérifier ces points.

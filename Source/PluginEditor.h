@@ -2,30 +2,33 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
 
-namespace ui { constexpr int kW = 640, kH = 548; }   // taille de conception ; l'éditeur se redimensionne à ce ratio
+// Taille de conception ; l'éditeur se redimensionne en gardant ce ratio.
+// La face avant (600 x 560) reprend la disposition du dessin du manuel du TEIL2 Revolo.
+namespace ui { constexpr int kW = 640, kH = 640; }
 
-// Pédale au pied (ONF ou TAP) avec sa LED
+// Grosse pédale au pied (ONF ou TAP)
 struct FootSwitch : public juce::Component
 {
     std::function<void()> onDown, onUp;
-    std::function<bool()> ledOn;
-    juce::Colour ledColour { juce::Colours::red };
-
     void paint (juce::Graphics&) override;
     void mouseDown (const juce::MouseEvent&) override;
     void mouseUp (const juce::MouseEvent&) override;
-    void refreshLed();   // ne repeint que si l'état de la LED a changé
-
-    bool down = false, lastLed = false;
+    bool down = false;
 };
 
-// Interrupteur à deux positions lié à un paramètre booléen (WET|MIX, ONF|MOM, FREE|SYNC)
-struct TwoWaySwitch : public juce::Button
+// Interrupteur à glissière lié à un paramètre booléen.
+//   Horizontal : légende gauche | glissière | légende droite  (MIX | WET, FREE | SYNC)
+//   Vertical   : légende haut / glissière / légende bas       (MOM / ONF)
+struct SlideSwitch : public juce::Button
 {
-    TwoWaySwitch (const juce::String& off, const juce::String& on)
-        : juce::Button (off + on), offText (off), onText (on) { setClickingTogglesState (true); }
+    enum Orientation { Horizontal, Vertical };
+    SlideSwitch (const juce::String& first, const juce::String& second, bool onIsFirst_, Orientation o)
+        : juce::Button (first + second), firstText (first), secondText (second), onIsFirst (onIsFirst_), orient (o)
+    { setClickingTogglesState (true); }
     void paintButton (juce::Graphics&, bool over, bool down) override;
-    juce::String offText, onText;
+    juce::String firstText, secondText;
+    bool onIsFirst;
+    Orientation orient;
 };
 
 class RevoloEditor : public juce::AudioProcessorEditor, private juce::Timer
@@ -47,6 +50,7 @@ private:
         juce::Slider slider { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox };
         juce::String name;
         int cx = 0, cy = 0;
+        bool labelBelow = false;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> att;
     };
 
@@ -56,22 +60,27 @@ private:
     };
 
     void timerCallback() override;
-    void addKnob (Knob&, const juce::String& paramId, const juce::String& name, int cx, int cy);
+    void addKnob (Knob&, const juce::String& paramId, const juce::String& name, int cx, int cy, bool labelBelow = false);
     void attachTempoKnob (bool sync);
     void showReadoutFor (const juce::MouseEvent&);
+    void drawLogo (juce::Graphics&, juce::Point<float> centre);
+    void drawLed (juce::Graphics&, juce::Point<float> c, juce::Colour colour, bool on);
     juce::Rectangle<int> S (int x, int y, int w, int h) const;
-    juce::Rectangle<int> lcdArea() const { return S (396, 14, 220, 28); }
+    juce::Rectangle<int> lcdArea() const { return S (396, 14, 224, 32); }
 
     KnobLook look;
     RevoloProcessor& proc;
     Knob reverb, character, length, air, noise, tremolo, tempo, filter;
     std::vector<Knob*> knobs;
-    TwoWaySwitch mixSwitch { "WET", "MIX" }, momSwitch { "ONF", "MOM" }, syncSwitch { "FREE", "SYNC" };
+    SlideSwitch mixSwitch  { "MIX", "WET", true,  SlideSwitch::Horizontal };
+    SlideSwitch momSwitch  { "MOM", "ONF", true,  SlideSwitch::Vertical };
+    SlideSwitch syncSwitch { "FREE", "SYNC", false, SlideSwitch::Horizontal };
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> mixAtt, momAtt, syncAtt;
     FootSwitch onf, tapBtn;
+    juce::Image grain;
 
     float scale = 1.f;
-    bool tempoIsSync = false, lastMom = false;
+    bool tempoIsSync = false, lastOnfLed = false, lastTapLed = false;
     juce::String lcdTitle, lcdValue;
     juce::uint32 lcdUntil = 0;
 
