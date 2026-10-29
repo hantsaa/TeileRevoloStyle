@@ -24,7 +24,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout RevoloProcessor::createLayou
     auto hz = [] (float v, int)
     {
         return v >= 1000.f ? juce::String (v / 1000.f, v >= 10000.f ? 1 : 2) + " kHz"
-                           : juce::String (v, v < 100.f ? 1 : 0) + " Hz";
+                            : juce::String (v, v < 100.f ? 1 : 0) + " Hz";
     };
     auto rate = [] (float v, int) { return juce::String (v, v < 10.f ? 2 : 1) + " Hz"; };
 

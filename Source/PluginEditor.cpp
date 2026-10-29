@@ -17,7 +17,7 @@ Font mono (float h, bool b = false) { return Font (FontOptions (Font::getDefault
 
 //==============================================================================
 void RevoloEditor::KnobLook::drawRotarySlider (Graphics& g, int x, int y, int w, int h, float pos,
-                                               float a0, float a1, Slider& s)
+                                                float a0, float a1, Slider& s)
 {
     const auto b = Rectangle<float> ((float) x, (float) y, (float) w, (float) h);
     const float R = jmin (b.getWidth(), b.getHeight()) * 0.5f;
@@ -84,7 +84,7 @@ void FootSwitch::paint (Graphics& g)
         g.fillEllipse (lc.x - 17.f, lc.y - 17.f, 34.f, 34.f);
     }
     g.setGradientFill (ColourGradient (on ? ledColour.brighter (0.7f) : ledColour.darker (0.9f), lc.x - 2.f, lc.y - 2.f,
-                                       on ? ledColour.darker (0.2f) : ledColour.darker (1.4f), lc.x + 5.f, lc.y + 5.f, true));
+                                        on ? ledColour.darker (0.2f) : ledColour.darker (1.4f), lc.x + 5.f, lc.y + 5.f, true));
     g.fillEllipse (lc.x - 5.5f, lc.y - 5.5f, 11.f, 11.f);
 
     // plot de la pédale
@@ -133,7 +133,7 @@ void TwoWaySwitch::paintButton (Graphics& g, bool over, bool)
     auto half = inner.withWidth (inner.getWidth() * 0.5f);
     if (on) half = half.withX (inner.getCentreX());
     g.setGradientFill (ColourGradient (kAmber.brighter (0.2f).withAlpha (a), half.getX(), half.getY(),
-                                       kAmber.darker (0.3f).withAlpha (a), half.getX(), half.getBottom(), false));
+                                        kAmber.darker (0.3f).withAlpha (a), half.getX(), half.getBottom(), false));
     g.fillRoundedRectangle (half, half.getHeight() * 0.5f);
 
     g.setFont (bold (b.getHeight() * 0.42f));
